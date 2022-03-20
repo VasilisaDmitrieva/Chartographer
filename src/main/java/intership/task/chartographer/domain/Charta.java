@@ -1,4 +1,4 @@
-package intership.task.chartographer;
+package intership.task.chartographer.domain;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Positive;

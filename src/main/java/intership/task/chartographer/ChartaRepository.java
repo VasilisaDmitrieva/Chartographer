@@ -1,5 +1,7 @@
 package intership.task.chartographer;
 
+import intership.task.chartographer.domain.Charta;
+import intership.task.chartographer.domain.Fragment;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Repository;
 
@@ -25,7 +27,7 @@ public class ChartaRepository {
         }
     }
 
-    public void save(Charta charta) {
+    public boolean save(Charta charta) {
         long id = Arrays.stream(Objects.requireNonNull(storage.list())).mapToLong(str -> {
             if (str.startsWith(prefix)) {
                 return Long.parseLong(str.split(splitBy)[1]);
@@ -36,9 +38,7 @@ public class ChartaRepository {
         charta.setId(id);
         File file = new File(storage, setStringByCharta(charta));
 
-//        BufferedImage image = new BufferedImage(charta.getWidth(), charta.getHeight(), BufferedImage.TYPE_3BYTE_BGR);'
-//        ImageIO.write(image, "bmp", new File(storage, "charta_" + id));
-        boolean ignored = file.mkdir();
+        return file.mkdir();
     }
 
     private String setStringByCharta(Charta charta) {
@@ -66,13 +66,19 @@ public class ChartaRepository {
             int bmp = is.readShort();
             bmp = (bmp & 0xFF) << 8 | (bmp & 0xFF00) >>> 8;
             if (bmp != 0x4D42) {
-                return false;
+                throw new IllegalArgumentException("Wrong image format.");
             }
             is.skipBytes(8);
             int offBits = Integer.reverseBytes(is.readInt());
 
-            is.skipBytes(8);
+            is.skipBytes(4);
+            int width = Integer.reverseBytes(is.readInt());
             int height = Integer.reverseBytes(is.readInt());
+
+            if (width != fragment.getWidth() || Math.abs(height) != fragment.getHeight()) {
+                throw new IllegalArgumentException("Wrong image size.");
+            }
+
             is.skipBytes(offBits - 14 - 12);
 
             //Fragment saving

@@ -1,5 +1,7 @@
 package intership.task.chartographer;
 
+import intership.task.chartographer.domain.Charta;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -37,6 +39,9 @@ public class ChartaStorage {
     }
 
     public void writePixel(int x, int y, int rgb) throws IOException {
+        if (invalidCoordinates(x, y)) {
+            return;
+        }
         if (y / stripeHeight != currentStripe) {
             if (currentStripe != -1) {
                 closeStripe();
@@ -48,15 +53,23 @@ public class ChartaStorage {
     }
 
     public int readPixel(int x, int y) throws IOException {
+        if (invalidCoordinates(x, y)) {
+            return 0;
+        }
         if (y / stripeHeight != currentStripe) {
             openStripe(y / stripeHeight, false);
         }
+        // no such stripe
         if (data == null) {
             return 0;
         }
+
         return data.getRGB(x, y % stripeHeight);
     }
 
+    private boolean invalidCoordinates(int x, int y) {
+        return x < 0 || y < 0 || x >= charta.getWidth() || y >= charta.getHeight();
+    }
     private void closeStripe() throws IOException {
         File stripe = new File(storage, Integer.toString(currentStripe));
         try (FileOutputStream outputStream = new FileOutputStream(stripe)) {

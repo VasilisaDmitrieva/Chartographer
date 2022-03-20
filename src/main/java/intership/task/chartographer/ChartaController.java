@@ -1,5 +1,7 @@
 package intership.task.chartographer;
 
+import intership.task.chartographer.domain.Charta;
+import intership.task.chartographer.domain.Fragment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,8 +25,10 @@ public class ChartaController {
         if (bindingResult.hasErrors()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        System.out.println(charta.getWidth() + " " + charta.getHeight());
-        chartaService.save(charta);
+
+        if (!chartaService.save(charta)) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         return new ResponseEntity<>(String.valueOf(charta.getId()), HttpStatus.CREATED);
     }
 
@@ -43,8 +47,12 @@ public class ChartaController {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
-        if (!chartaService.setFragment(charta, fragment, is)) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        try {
+            if (!chartaService.setFragment(charta, fragment, is)) {
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
         return new ResponseEntity<>(HttpStatus.OK);

@@ -1,16 +1,19 @@
-package intership.task.chartographer;
+package intership.task.chartographer.domain;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
 
 public class Fragment {
     @Positive
     private int width;
     @Positive
     private int height;
-    @PositiveOrZero
+
+    @Min(-20000) @Max(20000)
     private int x;
-    @PositiveOrZero
+
+    @Min(-50000) @Max(50000)
     private int y;
 
     public int getWidth() {
